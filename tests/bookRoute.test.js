@@ -50,14 +50,31 @@ describe('Book routes integration test', () => {
 
     it('should update an existing book', async () => {
         const createResponse = await request(app).post('/books').send(sampleBook);
+        if(!createResponse.body || !createResponse.body.book) {
+            console.error('Error creating book', createResponse.body);
+            return;
+        }
         const createdBook = createResponse.body.book;
 
-        const updatedBookData= {title: "Harry Potter and the Sorcerers Stone"};
+        const updatedBookData= {
+            amazon_url: "https://www.amazon.com/Harry-Potter-Philosophers-Stone-Rowling/dp/0747532699",
+            author: "J.K.Rowling",
+            language: "english",
+            pages: 223,
+            publisher: "Bloomsbury",
+            title: "Harry Potter and the Philosopher's Stone",
+            year: 1997
+        }; 
+        
         const updateResponse = await request(app).put(`/books/${createdBook.isbn}`).send(updatedBookData);
 
         expect(updateResponse.status).toBe(200);
         expect(updateResponse.body).toHaveProperty('book');
-        expect(updateResponse.body.book.title).toBe(updatedBookData.title);
+        const updatedBook = updateResponse.body.book;
+
+        expect(updatedBook.isbn).toBe(createdBook.isbn);
+        expect(updatedBook.title).toBe(updatedBookData.title);
+        expect(updatedBook.author).toBe(updatedBookData.author)
     });
 
     it('should delete an existing book', async() => {
